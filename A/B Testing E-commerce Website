@@ -1,0 +1,1179 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "d24d81ab",
+   "metadata": {
+    "papermill": {
+     "duration": 0.010286,
+     "end_time": "2024-09-06T01:37:06.468481",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.458195",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# **Background**"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6946a4eb",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008957,
+     "end_time": "2024-09-06T01:37:06.486722",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.477765",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "In this project, the company had developed a webpage on an e-commerce website, where the new webpage they had developed sought to increase the number of users who paid for their products. In this project, the company wanted to see if the new pages they developed had a significant effect on users so that the new pages developed could be implemented or it was possible that the new pages developed had no effect on users so they had to keep the old pages. For this reason, the data used had Two groups of equal size were created as the control and treatment groups, labeled A and B. The treatment group (B) was presented with the new web page while the control group (A) was presented with the old one, and the experiment was run. Data was collected for both groups, and then hypothesis testing was applied to determine whether or not the difference was significant."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "34749b75",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008567,
+     "end_time": "2024-09-06T01:37:06.504411",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.495844",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## About Dataset"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bf2a13a7",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008727,
+     "end_time": "2024-09-06T01:37:06.522141",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.513414",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "* **user_id**: unique users number\n",
+    "* **timestamp**: time\n",
+    "* **group**: treatment and control group\n",
+    "* **landing_page**: old_page and new_page\n",
+    "* **converted**: Sign up status after viewing the page (0-1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3a58eb25",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008696,
+     "end_time": "2024-09-06T01:37:06.539829",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.531133",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## AB Testing Steps "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "39360843",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008731,
+     "end_time": "2024-09-06T01:37:06.558050",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.549319",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "1. **Create Hypothesis**\n",
+    "* H0: There is no statistically significant difference between the old and new pages.\n",
+    "* H1: There is a statistically significant difference between the old page and the new page. \n",
+    "\n",
+    "The purpose of this hypothesis is to determine whether a change (for example, a new page) provides significantly different results compared to the old page.\n",
+    "\n",
+    "2. **Checking Statistical Assumptions**\n",
+    "**Normality Assumption**\n",
+    "* H0: Data is normally distributed.\n",
+    "* H1: Data is not normally distributed.\n",
+    "\n",
+    "If p-value < 0.05, we reject H0 and conclude that the data is not normally distributed (non-parametric is required). However, if the p-value ≥ 0.05, we fail to reject H0 and conclude that the data is normally distributed (parametric can be used).\n",
+    "\n",
+    "**Variance Homogeneity**\n",
+    "* H0: The variances between groups are homogeneous (equal).\n",
+    "* H1: Variances between groups are not homogeneous (different).\n",
+    "\n",
+    "*Note:\n",
+    "* If the data meet the assumption of normality and homogeneous variance, use **T-test**.\n",
+    "* If the data does not meet the assumption of normality (regardless of homogeneous variance status), use the **Mann-Whitney U test** (non-parametric test).\n",
+    "* If the data meets the assumption of normality but does not meet homogeneous variance, use **Welch's t-test**.\n",
+    "\n",
+    "3. **Analyzing Results and conclusions** \n",
+    "\n",
+    "The hypothesis will be concluded based on the p-value obtained from the parametric/non-parametric test to be performed. This result will answer the question: Is there a significant difference between the new page and the old page?\n",
+    "\n",
+    "*Note: If the p-value of the statistical test is < 0.05, we reject H0 and conclude that there is a statistically significant difference between the old page and the new page. On the other hand, if the p-value ≥ 0.05, we fail to reject H0 and conclude that there is no statistically significant difference between the old page and the new page.\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1fb665af",
+   "metadata": {
+    "papermill": {
+     "duration": 0.009242,
+     "end_time": "2024-09-06T01:37:06.576820",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.567578",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Import Libraries & Read Dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "3a884d12",
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:06.597081Z",
+     "iopub.status.busy": "2024-09-06T01:37:06.596514Z",
+     "iopub.status.idle": "2024-09-06T01:37:09.140643Z",
+     "shell.execute_reply": "2024-09-06T01:37:09.139338Z"
+    },
+    "papermill": {
+     "duration": 2.558214,
+     "end_time": "2024-09-06T01:37:09.144060",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:06.585846",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "import scipy.stats as stats"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "7c4f1c6f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:09.165875Z",
+     "iopub.status.busy": "2024-09-06T01:37:09.164290Z",
+     "iopub.status.idle": "2024-09-06T01:37:09.655840Z",
+     "shell.execute_reply": "2024-09-06T01:37:09.654323Z"
+    },
+    "papermill": {
+     "duration": 0.504964,
+     "end_time": "2024-09-06T01:37:09.658767",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:09.153803",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>user_id</th>\n",
+       "      <th>timestamp</th>\n",
+       "      <th>group</th>\n",
+       "      <th>landing_page</th>\n",
+       "      <th>converted</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>851104</td>\n",
+       "      <td>11:48.6</td>\n",
+       "      <td>control</td>\n",
+       "      <td>old_page</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>804228</td>\n",
+       "      <td>01:45.2</td>\n",
+       "      <td>control</td>\n",
+       "      <td>old_page</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>661590</td>\n",
+       "      <td>55:06.2</td>\n",
+       "      <td>treatment</td>\n",
+       "      <td>new_page</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>853541</td>\n",
+       "      <td>28:03.1</td>\n",
+       "      <td>treatment</td>\n",
+       "      <td>new_page</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>864975</td>\n",
+       "      <td>52:26.2</td>\n",
+       "      <td>control</td>\n",
+       "      <td>old_page</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   user_id timestamp      group landing_page  converted\n",
+       "0   851104   11:48.6    control     old_page          0\n",
+       "1   804228   01:45.2    control     old_page          0\n",
+       "2   661590   55:06.2  treatment     new_page          0\n",
+       "3   853541   28:03.1  treatment     new_page          0\n",
+       "4   864975   52:26.2    control     old_page          1"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "path = \"/kaggle/input/ecommerce-ab-testing-2022-dataset1/ecommerce_ab_testing_2022_dataset1/ab_data.csv\"\n",
+    "df = pd.read_csv(path)\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "a3a08d28",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:09.680918Z",
+     "iopub.status.busy": "2024-09-06T01:37:09.680442Z",
+     "iopub.status.idle": "2024-09-06T01:37:09.803951Z",
+     "shell.execute_reply": "2024-09-06T01:37:09.802463Z"
+    },
+    "papermill": {
+     "duration": 0.137962,
+     "end_time": "2024-09-06T01:37:09.807121",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:09.669159",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 294480 entries, 0 to 294479\n",
+      "Data columns (total 5 columns):\n",
+      " #   Column        Non-Null Count   Dtype \n",
+      "---  ------        --------------   ----- \n",
+      " 0   user_id       294480 non-null  int64 \n",
+      " 1   timestamp     294480 non-null  object\n",
+      " 2   group         294480 non-null  object\n",
+      " 3   landing_page  294480 non-null  object\n",
+      " 4   converted     294480 non-null  int64 \n",
+      "dtypes: int64(2), object(3)\n",
+      "memory usage: 11.2+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "df.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "b46703bd",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:09.828287Z",
+     "iopub.status.busy": "2024-09-06T01:37:09.827874Z",
+     "iopub.status.idle": "2024-09-06T01:37:09.951525Z",
+     "shell.execute_reply": "2024-09-06T01:37:09.950297Z"
+    },
+    "papermill": {
+     "duration": 0.137887,
+     "end_time": "2024-09-06T01:37:09.954900",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:09.817013",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "user_id         290585\n",
+       "timestamp        35993\n",
+       "group                2\n",
+       "landing_page         2\n",
+       "converted            2\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.nunique()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "ccc49300",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:09.977125Z",
+     "iopub.status.busy": "2024-09-06T01:37:09.975881Z",
+     "iopub.status.idle": "2024-09-06T01:37:09.984017Z",
+     "shell.execute_reply": "2024-09-06T01:37:09.982415Z"
+    },
+    "papermill": {
+     "duration": 0.021945,
+     "end_time": "2024-09-06T01:37:09.986570",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:09.964625",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(294480, 5)"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "37ea9b49",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.009955Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.009472Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.072360Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.071103Z"
+    },
+    "papermill": {
+     "duration": 0.078886,
+     "end_time": "2024-09-06T01:37:10.075220",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:09.996334",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df['user_id'].duplicated().sum()\n",
+    "df = df.drop_duplicates(subset='user_id', keep=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "bda970e5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.097571Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.097081Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.105150Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.103855Z"
+    },
+    "papermill": {
+     "duration": 0.0219,
+     "end_time": "2024-09-06T01:37:10.107702",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.085802",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(286690, 5)"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "838f429e",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.129446Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.128939Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.234706Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.233019Z"
+    },
+    "papermill": {
+     "duration": 0.120122,
+     "end_time": "2024-09-06T01:37:10.237759",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.117637",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "user_id         0\n",
+       "timestamp       0\n",
+       "group           0\n",
+       "landing_page    0\n",
+       "converted       0\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.isnull().sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "66456254",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.260154Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.259684Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.350548Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.349243Z"
+    },
+    "papermill": {
+     "duration": 0.105602,
+     "end_time": "2024-09-06T01:37:10.353532",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.247930",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "group      landing_page\n",
+       "control    old_page        143293\n",
+       "treatment  new_page        143397\n",
+       "Name: count, dtype: int64"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "count_group_page = df.groupby('group')['landing_page'].value_counts()\n",
+    "count_group_page"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "bebe68ea",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.376318Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.375869Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.387084Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.385694Z"
+    },
+    "papermill": {
+     "duration": 0.025998,
+     "end_time": "2024-09-06T01:37:10.389759",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.363761",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "group      landing_page\n",
+       "control    old_page        0.499819\n",
+       "treatment  new_page        0.500181\n",
+       "Name: count, dtype: float64"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "count_group_page / count_group_page.sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "b550ab18",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.412396Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.411957Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.450004Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.447952Z"
+    },
+    "papermill": {
+     "duration": 0.053599,
+     "end_time": "2024-09-06T01:37:10.453637",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.400038",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>user_id</th>\n",
+       "      <th>converted</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>count</th>\n",
+       "      <td>286690.000000</td>\n",
+       "      <td>286690.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>mean</th>\n",
+       "      <td>788036.057184</td>\n",
+       "      <td>0.119450</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>std</th>\n",
+       "      <td>91239.396095</td>\n",
+       "      <td>0.324317</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>min</th>\n",
+       "      <td>630000.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>25%</th>\n",
+       "      <td>709036.250000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>50%</th>\n",
+       "      <td>788059.500000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>75%</th>\n",
+       "      <td>866998.750000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>max</th>\n",
+       "      <td>945999.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "             user_id      converted\n",
+       "count  286690.000000  286690.000000\n",
+       "mean   788036.057184       0.119450\n",
+       "std     91239.396095       0.324317\n",
+       "min    630000.000000       0.000000\n",
+       "25%    709036.250000       0.000000\n",
+       "50%    788059.500000       0.000000\n",
+       "75%    866998.750000       0.000000\n",
+       "max    945999.000000       1.000000"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.describe()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "7313161f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.479830Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.479321Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.576595Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.575163Z"
+    },
+    "papermill": {
+     "duration": 0.112183,
+     "end_time": "2024-09-06T01:37:10.579275",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.467092",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th></th>\n",
+       "      <th>conv_rate</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>group</th>\n",
+       "      <th>landing_page</th>\n",
+       "      <th></th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>control</th>\n",
+       "      <th>old_page</th>\n",
+       "      <td>0.120173</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>treatment</th>\n",
+       "      <th>new_page</th>\n",
+       "      <td>0.118726</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                        conv_rate\n",
+       "group     landing_page           \n",
+       "control   old_page       0.120173\n",
+       "treatment new_page       0.118726"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.groupby(['group', 'landing_page']).agg(conv_rate=('converted', 'mean'))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "9061f86b",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.604548Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.603496Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.746552Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.744944Z"
+    },
+    "papermill": {
+     "duration": 0.159043,
+     "end_time": "2024-09-06T01:37:10.749555",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.590512",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Old Page\n",
+      "converted\n",
+      "0    126073\n",
+      "1     17220\n",
+      "Name: count, dtype: int64\n",
+      "New Page\n",
+      "converted\n",
+      "0    126372\n",
+      "1     17025\n",
+      "Name: count, dtype: int64\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Old Page\")\n",
+    "print(df.loc[df['landing_page'] == 'old_page', 'converted'].value_counts())\n",
+    "print(\"New Page\")\n",
+    "print(df.loc[df['landing_page'] == 'new_page', 'converted'].value_counts())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "05f50f4c",
+   "metadata": {
+    "papermill": {
+     "duration": 0.010676,
+     "end_time": "2024-09-06T01:37:10.771113",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.760437",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# AB Test"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "73a454ec",
+   "metadata": {
+    "papermill": {
+     "duration": 0.011245,
+     "end_time": "2024-09-06T01:37:10.793246",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.782001",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Normality Assumption\n",
+    "\n",
+    "**Normality Assumption**\n",
+    "* H0: Data is normally distributed.\n",
+    "* H1: Data is not normally distributed.\n",
+    "\n",
+    "If p-value < 0.05, we reject H0 and conclude that the data is not normally distributed (non-parametric is required). However, if the p-value ≥ 0.05, we fail to reject H0 and conclude that the data is normally distributed (parametric can be used)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "23f218e1",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.817278Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.816796Z",
+     "iopub.status.idle": "2024-09-06T01:37:10.894990Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.893682Z"
+    },
+    "papermill": {
+     "duration": 0.094269,
+     "end_time": "2024-09-06T01:37:10.898371",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.804102",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Data is not normally distributed.\n",
+      "p-value: 9.036752175762015e-178\n",
+      "test_stat: 0.37923878278163115\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/opt/conda/lib/python3.10/site-packages/scipy/stats/_axis_nan_policy.py:573: UserWarning: scipy.stats.shapiro: For N > 5000, computed p-value may not be accurate. Current N is 143293.\n",
+      "  res = hypotest_fun_out(*samples, **kwds)\n"
+     ]
+    }
+   ],
+   "source": [
+    "test_stat, pvalue= stats.shapiro(df.loc[df['landing_page'] == 'old_page', 'converted'])\n",
+    "if pvalue < 0.05:\n",
+    "    print(\"Data is not normally distributed.\")\n",
+    "else:\n",
+    "    print(\"Data is normally distributed.\")\n",
+    "print(f\"p-value:\", pvalue)\n",
+    "print(f\"test_stat:\", test_stat)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "2b760fec",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:10.923127Z",
+     "iopub.status.busy": "2024-09-06T01:37:10.922137Z",
+     "iopub.status.idle": "2024-09-06T01:37:11.000478Z",
+     "shell.execute_reply": "2024-09-06T01:37:10.998654Z"
+    },
+    "papermill": {
+     "duration": 0.094827,
+     "end_time": "2024-09-06T01:37:11.004409",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:10.909582",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Data is not normally distributed.\n",
+      "p-value: 6.263942656903057e-178\n",
+      "test_stat: 0.37673520650313475\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/opt/conda/lib/python3.10/site-packages/scipy/stats/_axis_nan_policy.py:573: UserWarning: scipy.stats.shapiro: For N > 5000, computed p-value may not be accurate. Current N is 143397.\n",
+      "  res = hypotest_fun_out(*samples, **kwds)\n"
+     ]
+    }
+   ],
+   "source": [
+    "test_stat, pvalue= stats.shapiro(df.loc[df['landing_page'] == 'new_page', 'converted'])\n",
+    "if pvalue < 0.05:\n",
+    "    print(\"Data is not normally distributed.\")\n",
+    "else:\n",
+    "    print(\"Data is normally distributed.\")\n",
+    "print(f\"p-value:\", pvalue)\n",
+    "print(f\"test_stat:\", test_stat)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "157c47e4",
+   "metadata": {
+    "papermill": {
+     "duration": 0.011594,
+     "end_time": "2024-09-06T01:37:11.028509",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:11.016915",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "It can be seen that the data is not normally distributed so **non-parametric** is required. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8b797899",
+   "metadata": {
+    "papermill": {
+     "duration": 0.012838,
+     "end_time": "2024-09-06T01:37:11.053654",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:11.040816",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## Variance Homogeneity\n",
+    "\n",
+    "**Variance Homogeneity**\n",
+    "* H0: The variances between groups are homogeneous (equal).\n",
+    "* H1: Variances between groups are not homogeneous (different)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "27f0848d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:11.078547Z",
+     "iopub.status.busy": "2024-09-06T01:37:11.078030Z",
+     "iopub.status.idle": "2024-09-06T01:37:11.217968Z",
+     "shell.execute_reply": "2024-09-06T01:37:11.216577Z"
+    },
+    "papermill": {
+     "duration": 0.155621,
+     "end_time": "2024-09-06T01:37:11.220703",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:11.065082",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Variances are homogeneous\n",
+      "p-value: 0.2322897281547632\n",
+      "test_stat: 1.4267917566652295\n"
+     ]
+    }
+   ],
+   "source": [
+    "test_stat, pvalue= stats.levene(df.loc[df['landing_page'] == 'old_page', 'converted'],\n",
+    "                                df.loc[df['landing_page'] == 'new_page', 'converted'])\n",
+    "if pvalue < 0.05:\n",
+    "    print(\"Variances are not homogeneous\")\n",
+    "else:\n",
+    "    print(\"Variances are homogeneous\")\n",
+    "print(f\"p-value:\", pvalue)\n",
+    "print(f\"test_stat:\", test_stat)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "48664ce0",
+   "metadata": {
+    "papermill": {
+     "duration": 0.011173,
+     "end_time": "2024-09-06T01:37:11.243372",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:11.232199",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Because **Data is Not Normally Distributed** but the **Variance Are Homogeneous** we will use Non-Parametric test **(Mann-Whitney U test)**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "c4b5191b",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-09-06T01:37:11.268974Z",
+     "iopub.status.busy": "2024-09-06T01:37:11.268540Z",
+     "iopub.status.idle": "2024-09-06T01:37:11.431700Z",
+     "shell.execute_reply": "2024-09-06T01:37:11.429885Z"
+    },
+    "papermill": {
+     "duration": 0.179744,
+     "end_time": "2024-09-06T01:37:11.434866",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:11.255122",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Mann-Whitney U Test: p-value= 0.23228910319572493\n",
+      "Mann-Whitney U Test: test_stat= 10288759668.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "test_stat, pvalue= stats.mannwhitneyu(df.loc[df['landing_page'] == 'old_page', 'converted'],\n",
+    "                                df.loc[df['landing_page'] == 'new_page', 'converted'])\n",
+    "\n",
+    "print(f\"Mann-Whitney U Test: p-value=\", pvalue)\n",
+    "print(f\"Mann-Whitney U Test: test_stat=\", test_stat)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6432b177",
+   "metadata": {
+    "papermill": {
+     "duration": 0.017406,
+     "end_time": "2024-09-06T01:37:11.468680",
+     "exception": false,
+     "start_time": "2024-09-06T01:37:11.451274",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "The conclusion is that the results obtained fail to reject H0 or zero hypothesis because the p-value is more than 0.05 so it can be said that the old_page can still be applied to the website because the new_page does not show a significant impact."
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "datasetId": 2133464,
+     "sourceId": 3548178,
+     "sourceType": "datasetVersion"
+    }
+   ],
+   "dockerImageVersionId": 30761,
+   "isGpuEnabled": false,
+   "isInternetEnabled": true,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.14"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 9.049678,
+   "end_time": "2024-09-06T01:37:12.207558",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2024-09-06T01:37:03.157880",
+   "version": "2.6.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
